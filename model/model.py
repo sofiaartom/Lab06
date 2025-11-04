@@ -1,6 +1,7 @@
 from database.DB_connect import get_connection
 from model.automobile import Automobile
 from model.noleggio import Noleggio
+import mysql.connector
 
 '''
     MODELLO: 
@@ -35,8 +36,26 @@ class Autonoleggio:
             Funzione che legge tutte le automobili nel database
             :return: una lista con tutte le automobili presenti oppure None
         """
-
         # TODO
+
+        try:
+            cnx = mysql.connector.connect(user='root',
+                                          password='',
+                                          database = 'autonoleggio')   # connessione al database
+            cursor = cnx.cursor()    # creazione del cursore
+            mostra_auto = """SELECT * FROM automobile"""   # la query da eseguire
+            cursor.execute(mostra_auto)
+            risultato = cursor.fetchall() # prendo tutti i risultati della query dal cursore
+            lista_automobili = []
+            for riga in risultato:
+                auto = Automobile(riga[0], riga[1], riga[2], riga[3], riga[4], riga[5]) # trasformiamo il risultato in un tipo Automobile
+                lista_automobili.append(auto)
+            cursor.close()
+            cnx.close()
+            return lista_automobili
+        except mysql.connector.Error as err:
+            print('Connessione al database non riuscita')
+            return None
 
     def cerca_automobili_per_modello(self, modello) -> list[Automobile] | None:
         """
@@ -45,3 +64,21 @@ class Autonoleggio:
             :return: una lista con tutte le automobili di marca e modello indicato oppure None
         """
         # TODO
+        try:
+            cnx = mysql.connector.connect(user='root',
+                                          password='',
+                                          database='autonoleggio')  # connessione al database
+            cursor = cnx.cursor()  # creazione del cursore
+            cerca_auto = "SELECT * FROM automobile WHERE modello=%s"
+            cursor.execute(cerca_auto, (modello,))  # evitiamo query injection
+            risultato = cursor.fetchall() # prendo tutti i risultati della query dal cursore
+            lista_auto_per_modello = []
+            for riga in risultato:
+                auto = Automobile(riga[0], riga[1], riga[2], riga[3], riga[4], riga[5]) # trasformiamo il risultato in un tipo Automobile
+                lista_auto_per_modello.append(auto)
+            cursor.close()
+            cnx.close()
+            return lista_auto_per_modello
+        except mysql.connector.Error as err:
+            print('Connessione al database non riuscita')
+            return None
